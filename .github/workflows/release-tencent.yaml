@@ -38,6 +38,7 @@ jobs:
         env:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          MSYS_NO_PATHCONV: "1"
         shell: bash
         run: |
           pip install coscmd
@@ -78,6 +79,7 @@ jobs:
         env:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          MSYS_NO_PATHCONV: "1"
         run: |
           pip install coscmd
           coscmd config \
@@ -123,6 +125,7 @@ jobs:
         env:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          MSYS_NO_PATHCONV: "1"
         run: |
           pip install coscmd
           coscmd config \
