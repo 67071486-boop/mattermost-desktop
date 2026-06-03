@@ -28,6 +28,9 @@ jobs:
         run: npm ci
 
       - name: Package for Windows
+        env:
+          CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: npm run package:windows
 
       - name: Collect artifacts
@@ -60,7 +63,10 @@ jobs:
         run: npm ci
 
       - name: Package for macOS
-        run: npm run package:mac-with-universal
+        run: |
+          # 直接用 electron-builder，不传 provisioning profile（我们没 Apple 证书）
+          npm run build-prod
+          npx electron-builder --mac --x64 --arm64 --publish=never
 
       - name: Collect artifacts
         run: |
