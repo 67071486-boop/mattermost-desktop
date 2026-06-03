@@ -180,14 +180,14 @@ function ConfigureServer({
         if (validationResult?.status === URLValidationStatus.URLNotMatched) {
             message = {
                 type: STATUS.WARNING,
-                value: formatMessage({id: 'renderer.components.configureServer.url.urlNotMatched', defaultMessage: 'The server URL provided does not match the configured Site URL on your Mattermost server. Server version: {serverVersion}'}, {serverVersion: validationResult.serverVersion}),
+                value: formatMessage({id: 'renderer.components.configureServer.url.urlNotMatched', defaultMessage: 'The server URL provided does not match the configured Site URL on your Teamost server. Server version: {serverVersion}'}, {serverVersion: validationResult.serverVersion}),
             };
         }
 
         if (validationResult?.status === URLValidationStatus.URLUpdated) {
             message = {
                 type: STATUS.INFO,
-                value: formatMessage({id: 'renderer.components.configureServer.url.urlUpdated', defaultMessage: 'The server URL provided has been updated to match the configured Site URL on your Mattermost server. Server version: {serverVersion}'}, {serverVersion: validationResult.serverVersion}),
+                value: formatMessage({id: 'renderer.components.configureServer.url.urlUpdated', defaultMessage: 'The server URL provided has been updated to match the configured Site URL on your Teamost server. Server version: {serverVersion}'}, {serverVersion: validationResult.serverVersion}),
             };
         }
 
@@ -369,7 +369,7 @@ function ConfigureServer({
                                         onChange={handleURLOnChange}
                                         customMessage={urlError ?? ({
                                             type: STATUS.INFO,
-                                            value: formatMessage({id: 'renderer.components.configureServer.url.info', defaultMessage: 'The URL of your Mattermost server'}),
+                                            value: formatMessage({id: 'renderer.components.configureServer.url.info', defaultMessage: 'The URL of your Teamost server'}),
                                         })}
                                         placeholder={formatMessage({id: 'renderer.components.configureServer.url.placeholder', defaultMessage: 'Server URL'})}
                                         disabled={waiting}

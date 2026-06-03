@@ -19,7 +19,7 @@ function getMacVersions() {
 }
 
 const config = {
-    appId: 'Mattermost.Desktop',
+    appId: 'Teamost.Desktop',
     artifactName: '${version}/${name}-${version}-${os}-${arch}.${ext}',
     directories: {
         buildResources: 'src/assets',
@@ -56,7 +56,7 @@ const config = {
     ],
     protocols: [
         {
-            name: 'Mattermost',
+            name: 'Teamost',
             schemes: [
                 'mattermost',
             ],
@@ -66,7 +66,7 @@ const config = {
     afterPack: 'scripts/afterpack.js',
     deb: {
         artifactName: '${version}/${name}_${version}-1_${arch}.${ext}',
-        synopsis: 'Mattermost Desktop App',
+        synopsis: 'Teamost Desktop App',
         depends: [
             'libnotify4',
             'libxtst6',
@@ -89,7 +89,7 @@ const config = {
             'rpm',
             'flatpak',
         ],
-        appId: 'com.Mattermost.Desktop',
+        appId: 'com.Teamost.Desktop',
         extraFiles: [
             {
                 filter: [
@@ -132,7 +132,7 @@ const config = {
         extendInfo: {
             NSMicrophoneUsageDescription: 'Microphone access is used to capture audio for voice communication and recordings.',
             NSCameraUsageDescription: 'Camera access is used to capture video for video conferencing and recordings.',
-            NSFocusStatusUsageDescription: 'Focus status is used by Mattermost to determine whether to send notifications or not.',
+            NSFocusStatusUsageDescription: 'Focus status is used by Teamost to determine whether to send notifications or not.',
             LSFileQuarantineEnabled: true,
         },
         ...getMacVersions(),
@@ -190,15 +190,15 @@ const config = {
         ],
         signExts: ['.dll', '.node'],
         azureSignOptions: process.env.AZURE_CLIENT_ID ? {
-            certificateProfileName: 'mattermost-desktop-app',
-            codeSigningAccountName: 'DesktopAppCodeSigning',
+            certificateProfileName: 'teamost-desktop-app',
+            codeSigningAccountName: 'TeamostCodeSigning',
             endpoint: 'https://eus.codesigning.azure.net',
-            publisherName: 'CN="Mattermost, Inc.", O="Mattermost, Inc.", L=Palo Alto, S=California, C=US',
+            publisherName: 'CN="Teamost, Inc.", O="Teamost, Inc.", L=Beijing, S=Beijing, C=CN',
         } : null,
     },
     msi: {
         additionalWixArgs: ['-ext', 'WixUtilExtension'],
-        upgradeCode: '{8523DAF0-699D-4CC7-9A65-C5E696A9DE6D}',
+        upgradeCode: '{F9BCF313-8BD1-4E21-A02D-849185D764AA}',
         perMachine: true,
     },
     rpm: {

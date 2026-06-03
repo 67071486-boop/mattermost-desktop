@@ -18,7 +18,7 @@ const windowMenuConfig = {
         ...demoMattermostConfig.servers,
         {
             name: 'community',
-            url: 'https://community.mattermost.com',
+            url: 'https://community.teamost.cn',
             order: 2,
         },
     ],

@@ -102,7 +102,7 @@ export class ServerHub {
 
         const modalPromise = ModalManager.addModal<{prefillURL?: string}, Server>(
             ModalConstants.NEW_SERVER_MODAL,
-            'mattermost-desktop://renderer/newServer.html',
+            'teamost-desktop://renderer/newServer.html',
             getLocalPreload('internalAPI.js'),
             {prefillURL},
             mainWindow,
@@ -143,7 +143,7 @@ export class ServerHub {
 
         const modalPromise = ModalManager.addModal<UniqueServerWithPermissions, {server: Server; permissions: Permissions}>(
             ModalConstants.EDIT_SERVER_MODAL,
-            'mattermost-desktop://renderer/editServer.html',
+            'teamost-desktop://renderer/editServer.html',
             getLocalPreload('internalAPI.js'),
             {server: server.toUniqueServer(), permissions: PermissionsManager.getForServer(server) ?? {}},
             mainWindow);
@@ -175,7 +175,7 @@ export class ServerHub {
 
         const modalPromise = ModalManager.addModal<null, boolean>(
             ModalConstants.REMOVE_SERVER_MODAL,
-            'mattermost-desktop://renderer/removeServer.html',
+            'teamost-desktop://renderer/removeServer.html',
             getLocalPreload('internalAPI.js'),
             null,
             mainWindow,
@@ -378,7 +378,7 @@ export class ServerHub {
             };
         }
 
-        const remoteServerName = remoteInfo.siteName === 'Mattermost' ? remoteURL.host.split('.')[0] : remoteInfo.siteName;
+        const remoteServerName = remoteInfo.siteName === 'Teamost' ? remoteURL.host.split('.')[0] : remoteInfo.siteName;
 
         // If we were only able to connect via HTTP, warn the user that the connection is not secure
         if (remoteURL.protocol === 'http:') {

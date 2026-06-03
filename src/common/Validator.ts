@@ -191,7 +191,7 @@ const configDataSchemaV4 = Joi.object<ConfigV4>({
     useNativeTitleBar: Joi.boolean().default(false),
 });
 
-// eg. data['community.mattermost.com'] = { data: 'certificate data', issuerName: 'COMODO RSA Domain Validation Secure Server CA'};
+// eg. data['community.teamost.cn'] = { data: 'certificate data', issuerName: 'COMODO RSA Domain Validation Secure Server CA'};
 const certificateStoreSchema = Joi.object().pattern(
     Joi.string().uri(),
     Joi.object<ComparableCertificate>({

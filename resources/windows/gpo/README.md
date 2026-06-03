@@ -17,7 +17,7 @@ Example:
 
 | Value Name | Value                            |
 |------------|----------------------------------|
-| Community  | <https://community.mattermost.com> |
+| Community  | <https://community.teamost.cn> |
 8. Now if you open your Mattermost desktop application you should be able to see the server in the server dropdown
 
 ---

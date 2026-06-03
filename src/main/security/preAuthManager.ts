@@ -20,9 +20,9 @@ import type {CertificateModalData} from 'types/certificate';
 
 const log = new Logger('PreAuthManager');
 const preload = getLocalPreload('internalAPI.js');
-const loginModalHtml = 'mattermost-desktop://renderer/loginModal.html';
-const preAuthModalHtml = 'mattermost-desktop://renderer/preAuthHeaderModal.html';
-const html = 'mattermost-desktop://renderer/certificateModal.html';
+const loginModalHtml = 'teamost-desktop://renderer/loginModal.html';
+const preAuthModalHtml = 'teamost-desktop://renderer/preAuthHeaderModal.html';
+const html = 'teamost-desktop://renderer/certificateModal.html';
 
 export class PreAuthManager {
     constructor() {

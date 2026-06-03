@@ -237,7 +237,7 @@ export class UpdateNotifier {
     };
 
     private getDownloadURL = (version: string, platformName: string, fileExt: string, archName: string): string => {
-        return `mattermost-desktop-${version}-${platformName}-${archName}.${fileExt}`;
+        return `teamost-desktop-${version}-${platformName}-${archName}.${fileExt}`;
     };
 
     private skipVersion = (): void => {

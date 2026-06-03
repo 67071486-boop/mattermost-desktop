@@ -23,7 +23,7 @@ describe('common/utils/url', () => {
     });
     describe('parseURL', () => {
         it('should return the URL if it is already a URL', () => {
-            const url = new URL('http://mattermost.com');
+            const url = new URL('http://teamost.cn');
             expect(parseURL(url)).toBe(url);
         });
 
@@ -33,10 +33,10 @@ describe('common/utils/url', () => {
         });
 
         it('should remove duplicate slashes in a URL when parsing', () => {
-            const urlWithExtraSlashes = 'https://mattermost.com//sub//path//example';
+            const urlWithExtraSlashes = 'https://teamost.cn//sub//path//example';
             const parsedURL = parseURL(urlWithExtraSlashes);
 
-            expect(parsedURL.toString()).toBe('https://mattermost.com/sub/path/example');
+            expect(parsedURL.toString()).toBe('https://teamost.cn/sub/path/example');
         });
 
         it('should preserve triple slashes for non-special schemes', () => {
@@ -81,11 +81,11 @@ describe('common/utils/url', () => {
 
     describe('isValidURL', () => {
         it('should be true for a valid web url', () => {
-            const testURL = 'https://developers.mattermost.com/';
+            const testURL = 'https://developers.teamost.cn/';
             expect(isValidURL(testURL)).toBe(true);
         });
         it('should be true for a valid, non-https web url', () => {
-            const testURL = 'http://developers.mattermost.com/';
+            const testURL = 'http://developers.teamost.cn/';
             expect(isValidURL(testURL)).toBe(true);
         });
         it('should be true for an invalid, self-defined, top-level domain', () => {
@@ -93,15 +93,15 @@ describe('common/utils/url', () => {
             expect(isValidURL(testURL)).toBe(true);
         });
         it('should be true for a file download url', () => {
-            const testURL = 'https://community.mattermost.com/api/v4/files/ka3xbfmb3ffnmgdmww8otkidfw?download=1';
+            const testURL = 'https://community.teamost.cn/api/v4/files/ka3xbfmb3ffnmgdmww8otkidfw?download=1';
             expect(isValidURL(testURL)).toBe(true);
         });
         it('should be true for a permalink url', () => {
-            const testURL = 'https://community.mattermost.com/test-channel/pl/pdqowkij47rmbyk78m5hwc7r6r';
+            const testURL = 'https://community.teamost.cn/test-channel/pl/pdqowkij47rmbyk78m5hwc7r6r';
             expect(isValidURL(testURL)).toBe(true);
         });
         it('should be true for a valid, internal domain', () => {
-            const testURL = 'https://mattermost.company-internal';
+            const testURL = 'https://teamost.company-internal';
             expect(isValidURL(testURL)).toBe(true);
         });
         it('should be true for a second, valid internal domain', () => {
@@ -119,7 +119,7 @@ describe('common/utils/url', () => {
     });
     describe('isValidURI', () => {
         it('should be true for a deeplink url', () => {
-            const testURL = 'mattermost://community-release.mattermost.com/core/channels/developers';
+            const testURL = 'mattermost://community-release.teamost.cn/core/channels/developers';
             expect(isValidURI(testURL)).toBe(true);
         });
         it('should be false for a malicious url', () => {
@@ -130,43 +130,43 @@ describe('common/utils/url', () => {
 
     describe('isInternalURL', () => {
         it('should return false on different hosts', () => {
-            const baseURL = new URL('http://mattermost.com');
+            const baseURL = new URL('http://teamost.cn');
             const externalURL = new URL('http://google.com');
 
             expect(isInternalURL(externalURL, baseURL)).toBe(false);
         });
 
         it('should return false on different ports', () => {
-            const baseURL = new URL('http://mattermost.com:8080');
-            const externalURL = new URL('http://mattermost.com:9001');
+            const baseURL = new URL('http://teamost.cn:8080');
+            const externalURL = new URL('http://teamost.cn:9001');
 
             expect(isInternalURL(externalURL, baseURL)).toBe(false);
         });
 
         it('should return false on different subpaths', () => {
-            const baseURL = new URL('http://mattermost.com/sub/path/');
-            const externalURL = new URL('http://mattermost.com/different/sub/path');
+            const baseURL = new URL('http://teamost.cn/sub/path/');
+            const externalURL = new URL('http://teamost.cn/different/sub/path');
 
             expect(isInternalURL(externalURL, baseURL)).toBe(false);
         });
 
         it('should return true if matching', () => {
-            const baseURL = new URL('http://mattermost.com/');
-            const externalURL = new URL('http://mattermost.com');
+            const baseURL = new URL('http://teamost.cn/');
+            const externalURL = new URL('http://teamost.cn');
 
             expect(isInternalURL(externalURL, baseURL)).toBe(true);
         });
 
         it('should return true if matching with subpath', () => {
-            const baseURL = new URL('http://mattermost.com/sub/path/');
-            const externalURL = new URL('http://mattermost.com/sub/path');
+            const baseURL = new URL('http://teamost.cn/sub/path/');
+            const externalURL = new URL('http://teamost.cn/sub/path');
 
             expect(isInternalURL(externalURL, baseURL)).toBe(true);
         });
 
         it('should return true if subpath of', () => {
-            const baseURL = new URL('http://mattermost.com/');
-            const externalURL = new URL('http://mattermost.com/sub/path');
+            const baseURL = new URL('http://teamost.cn/');
+            const externalURL = new URL('http://teamost.cn/sub/path');
 
             expect(isInternalURL(externalURL, baseURL)).toBe(true);
         });
@@ -216,21 +216,21 @@ describe('common/utils/url', () => {
     });
 
     describe('isUrlType', () => {
-        const serverURL = new URL('http://mattermost.com');
+        const serverURL = new URL('http://teamost.cn');
         const urlType = 'url-type';
 
         it('should identify base url', () => {
-            const adminURL = new URL(`http://mattermost.com/${urlType}`);
+            const adminURL = new URL(`http://teamost.cn/${urlType}`);
             expect(isUrlType('url-type', serverURL, adminURL)).toBe(true);
         });
 
         it('should identify url of correct type', () => {
-            const adminURL = new URL(`http://mattermost.com/${urlType}/some/path`);
+            const adminURL = new URL(`http://teamost.cn/${urlType}/some/path`);
             expect(isUrlType('url-type', serverURL, adminURL)).toBe(true);
         });
 
         it('should not identify other url', () => {
-            const adminURL = new URL('http://mattermost.com/some/other/path');
+            const adminURL = new URL('http://teamost.cn/some/other/path');
             expect(isUrlType('url-type', serverURL, adminURL)).toBe(false);
         });
     });

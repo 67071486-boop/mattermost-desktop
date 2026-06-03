@@ -109,7 +109,7 @@ describe('main/views/webContentsEvents', () => {
         });
 
         it('should allow navigation when protocol is mailto', () => {
-            willNavigate(event, 'mailto:test@mattermost.com');
+            willNavigate(event, 'mailto:test@teamost.cn');
             expect(event.preventDefault).not.toBeCalled();
         });
 

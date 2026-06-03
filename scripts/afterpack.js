@@ -24,10 +24,10 @@ function fixSetuid(context) {
 function getAppFileName(context) {
     switch (context.electronPlatformName) {
     case 'win32':
-        return 'Mattermost.exe';
+        return 'Teamost.exe';
     case 'darwin':
     case 'mas':
-        return 'Mattermost.app';
+        return 'Teamost.app';
     case 'linux':
         return context.packager.executableName;
     default:

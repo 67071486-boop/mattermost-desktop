@@ -48,7 +48,7 @@ jest.mock('common/config', () => ({
 
 jest.mock('common/config/buildConfig', () => ({
     default: {
-        updateNotificationURL: 'https://releases.mattermost.com/desktop',
+        updateNotificationURL: 'https://releases.teamost.cn/desktop',
     },
 }));
 

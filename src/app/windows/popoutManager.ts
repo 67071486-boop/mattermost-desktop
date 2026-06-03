@@ -145,7 +145,7 @@ export class PopoutManager {
             this.handleViewUpdated(viewId);
             window.browserWindow.show();
         });
-        window.browserWindow.loadURL('mattermost-desktop://renderer/popout.html').catch(
+        window.browserWindow.loadURL('teamost-desktop://renderer/popout.html').catch(
             (reason) => {
                 log.error('failed to load', {reason});
             });

@@ -206,24 +206,24 @@ describe('app/menus/appMenu/help', () => {
         it('should show academy link when available', () => {
             localizeMessage.mockImplementation((id) => {
                 if (id === 'main.menus.app.help.academy') {
-                    return 'Mattermost Academy';
+                    return 'Teamost Academy';
                 }
                 return id;
             });
             const menu = createHelpMenu();
-            const academyItem = menu.submenu.find((item) => item.label === 'Mattermost Academy');
+            const academyItem = menu.submenu.find((item) => item.label === 'Teamost Academy');
             expect(academyItem).not.toBe(undefined);
         });
 
         it('should call shell.openExternal with academy link when academy is clicked', () => {
             localizeMessage.mockImplementation((id) => {
                 if (id === 'main.menus.app.help.academy') {
-                    return 'Mattermost Academy';
+                    return 'Teamost Academy';
                 }
                 return id;
             });
             const menu = createHelpMenu();
-            const academyItem = menu.submenu.find((item) => item.label === 'Mattermost Academy');
+            const academyItem = menu.submenu.find((item) => item.label === 'Teamost Academy');
             academyItem.click();
             expect(shell.openExternal).toHaveBeenCalledWith('http://academy.site.com');
         });
@@ -291,7 +291,7 @@ describe('app/menus/appMenu/help', () => {
             const menu = createHelpMenu();
             const reportProblemItem = menu.submenu.find((item) => item.label === 'Report a problem');
             reportProblemItem.click();
-            expect(shell.openExternal).toHaveBeenCalledWith('https://support.mattermost.com/hc/en-us/requests/new');
+            expect(shell.openExternal).toHaveBeenCalledWith('https://support.teamost.cn/hc/en-us/requests/new');
         });
 
         it('should use default report problem link for team edition', () => {
@@ -307,7 +307,7 @@ describe('app/menus/appMenu/help', () => {
             const menu = createHelpMenu();
             const reportProblemItem = menu.submenu.find((item) => item.label === 'Report a problem');
             reportProblemItem.click();
-            expect(shell.openExternal).toHaveBeenCalledWith('https://mattermost.com/pl/report-a-bug');
+            expect(shell.openExternal).toHaveBeenCalledWith('https://teamost.cn/pl/report-a-bug');
         });
 
         describe('should only show report problem link if the link is a valid http or https URL', () => {

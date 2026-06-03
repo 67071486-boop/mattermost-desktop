@@ -77,14 +77,14 @@ export function getLocalPreload(file: string) {
 export function composeUserAgent(browserMode?: boolean) {
     const baseUserAgent = app.userAgentFallback.split(' ');
 
-    // filter out the Mattermost tag that gets added earlier on
-    const filteredUserAgent = baseUserAgent.filter((ua) => !ua.startsWith('Mattermost'));
+    // filter out the Teamost tag that gets added earlier on
+    const filteredUserAgent = baseUserAgent.filter((ua) => !ua.startsWith('Teamost'));
 
     if (browserMode) {
         return filteredUserAgent.join(' ');
     }
 
-    return `${filteredUserAgent.join(' ')} Mattermost/${app.getVersion()}`;
+    return `${filteredUserAgent.join(' ')} Teamost/${app.getVersion()}`;
 }
 
 export function isStringWithLength(string: unknown): boolean {
@@ -128,7 +128,7 @@ export function resetScreensharePermissionsMacOS() {
     if (process.platform !== 'darwin') {
         return Promise.resolve();
     }
-    return exec('tccutil reset ScreenCapture Mattermost.Desktop',
+    return exec('tccutil reset ScreenCapture Teamost.Desktop',
         {timeout: 1000});
 }
 

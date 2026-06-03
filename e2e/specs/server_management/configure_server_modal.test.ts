@@ -65,7 +65,7 @@ test.describe('Configure Server Modal', () => {
         const {app, configureServerModal, userDataDir} = await launchWithWelcomeScreen(testInfo);
         try {
             await configureServerModal.type('#input_name', 'TestServer');
-            await configureServerModal.type('#input_url', 'https://community.mattermost.com');
+            await configureServerModal.type('#input_url', 'https://community.teamost.cn');
             await configureServerModal.waitForSelector('#customMessage_url.Input___success');
             const connectButtonDisabled = await configureServerModal.getAttribute('#connectConfigureServer', 'disabled');
             expect(connectButtonDisabled === '').toBe(false);

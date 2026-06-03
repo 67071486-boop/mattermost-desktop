@@ -30,7 +30,7 @@ export default function createHelpMenu(): MenuItemConstructorOptions {
     const serverId = ServerManager.getCurrentServerId();
     const currentServer = serverId ? ServerManager.getServer(serverId) : undefined;
     const currentRemoteInfo = currentServer ? ServerManager.getRemoteInfo(currentServer.id) : undefined;
-    const helpLink = currentRemoteInfo?.helpLink ?? Config.helpLink;
+    const helpLink = Config.helpLink;
     if (isHttpLink(helpLink)) {
         submenu.push({
             label: localizeMessage('main.menus.app.help.userGuide', 'User guide'),
@@ -44,7 +44,7 @@ export default function createHelpMenu(): MenuItemConstructorOptions {
     const academyLink = Config.academyLink;
     if (isHttpLink(academyLink)) {
         submenu.push({
-            label: localizeMessage('main.menus.app.help.academy', 'Mattermost Academy'),
+            label: localizeMessage('main.menus.app.help.academy', 'Teamost Academy'),
             click() {
                 shell.openExternal(academyLink);
             },
@@ -70,18 +70,9 @@ export default function createHelpMenu(): MenuItemConstructorOptions {
         },
     });
 
-    let reportProblemLink = currentRemoteInfo?.reportProblemLink;
-    if (!reportProblemLink) {
-        switch (currentRemoteInfo?.licenseSku) {
-        case 'enterprise':
-        case 'professional':
-            reportProblemLink = DEFAULT_EE_REPORT_PROBLEM_LINK;
-            break;
-        default:
-            reportProblemLink = DEFAULT_TE_REPORT_PROBLEM_LINK;
-            break;
-        }
-    }
+    const licenseSku = currentRemoteInfo?.licenseSku;
+    const reportProblemLink = (licenseSku === 'enterprise' || licenseSku === 'professional') ?
+        DEFAULT_EE_REPORT_PROBLEM_LINK : DEFAULT_TE_REPORT_PROBLEM_LINK;
     if (isHttpLink(reportProblemLink)) {
         submenu.push({
             label: localizeMessage('main.menus.app.help.reportProblem', 'Report a problem'),
