@@ -11,6 +11,7 @@ defaults:
     shell: bash
 
 jobs:
+  # ========== Windows 构建 + 直接上传 COS ==========
   build-windows:
     runs-on: windows-2022
     steps:
@@ -33,19 +34,25 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: npm run package:windows
 
-      - name: Collect artifacts
+      - name: Upload to Tencent COS
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
         shell: bash
         run: |
-          mkdir -p ./build/win
-          bash ./scripts/cp_artifacts.sh release ./build/win
+          pip install coscmd
+          coscmd config \
+            -a "${TENCENT_SECRET_ID}" \
+            -s "${TENCENT_SECRET_KEY}" \
+            -b teamost-releases-1340849355 \
+            -r ap-beijing
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-windows
-          path: ./build/win
-          retention-days: 7
+          VERSION=$(jq -r '.version' package.json)
+          echo ">>> 上传 Windows 产物 v${VERSION} ..."
+          coscmd upload -r "release/${VERSION}/" "/desktop/${VERSION}/"
+          echo ">>> Windows 上传完成！"
 
+  # ========== macOS 构建 + 直接上传 COS ==========
   build-macos:
     runs-on: macos-15
     steps:
@@ -64,22 +71,27 @@ jobs:
 
       - name: Package for macOS
         run: |
-          # 直接用 electron-builder，不传 provisioning profile（我们没 Apple 证书）
           npm run build-prod
           npx electron-builder --mac --x64 --arm64 --publish=never
 
-      - name: Collect artifacts
+      - name: Upload to Tencent COS
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
         run: |
-          mkdir -p ./build/mac
-          bash ./scripts/cp_artifacts.sh release ./build/mac
+          pip install coscmd
+          coscmd config \
+            -a "${TENCENT_SECRET_ID}" \
+            -s "${TENCENT_SECRET_KEY}" \
+            -b teamost-releases-1340849355 \
+            -r ap-beijing
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-macos
-          path: ./build/mac
-          retention-days: 7
+          VERSION=$(jq -r '.version' package.json)
+          echo ">>> 上传 macOS 产物 v${VERSION} ..."
+          coscmd upload -r "release/${VERSION}/" "/desktop/${VERSION}/"
+          echo ">>> macOS 上传完成！"
 
+  # ========== Linux 构建 + 直接上传 COS ==========
   build-linux:
     runs-on: ubuntu-22.04
     steps:
@@ -107,65 +119,52 @@ jobs:
       - name: Package for Linux
         run: npm run package:linux
 
-      - name: Collect artifacts
-        run: |
-          mkdir -p ./build/linux
-          bash ./scripts/cp_artifacts.sh release ./build/linux
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-linux
-          path: ./build/linux
-          retention-days: 7
-
-  upload-to-cos:
-    runs-on: ubuntu-22.04
-    needs:
-      - build-windows
-      - build-macos
-      - build-linux
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./build
-          pattern: build-*
-          merge-multiple: true
-
       - name: Upload to Tencent COS
         env:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
         run: |
           pip install coscmd
-
-          # 配置 coscmd
           coscmd config \
             -a "${TENCENT_SECRET_ID}" \
             -s "${TENCENT_SECRET_KEY}" \
             -b teamost-releases-1340849355 \
             -r ap-beijing
 
-          # 读取版本号
+          VERSION=$(jq -r '.version' package.json)
+          echo ">>> 上传 Linux 产物 v${VERSION} ..."
+          coscmd upload -r "release/${VERSION}/" "/desktop/${VERSION}/"
+          echo ">>> Linux 上传完成！"
+
+  # ========== 汇总：版本文件 + CDN刷新 + GitHub Release ==========
+  finalize:
+    runs-on: ubuntu-22.04
+    needs:
+      - build-windows
+      - build-macos
+      - build-linux
+    if: always() && !cancelled()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate version file & Refresh CDN
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+        run: |
+          pip install coscmd tccli
+
+          coscmd config \
+            -a "${TENCENT_SECRET_ID}" \
+            -s "${TENCENT_SECRET_KEY}" \
+            -b teamost-releases-1340849355 \
+            -r ap-beijing
+
           VERSION=$(jq -r '.version' package.json)
           echo ">>> 版本: ${VERSION}"
 
-          # 上传所有平台产物
-          echo ">>> 上传 Windows 产物..."
-          coscmd upload -r "./build/win/${VERSION}/" "/desktop/${VERSION}/" || echo "no win artifacts"
-
-          echo ">>> 上传 macOS 产物..."
-          coscmd upload -r "./build/mac/${VERSION}/" "/desktop/${VERSION}/" || echo "no mac artifacts"
-
-          echo ">>> 上传 Linux 产物..."
-          coscmd upload -r "./build/linux/${VERSION}/" "/desktop/${VERSION}/" || echo "no linux artifacts"
-
           # 生成版本文件
-          echo ">>> 生成版本文件..."
           if echo "${VERSION}" | grep -qP '^[0-9]+\.[0-9]+\.[0-9]+$'; then
             echo "${VERSION}" > /tmp/latest.txt
             coscmd upload /tmp/latest.txt /desktop/latest.txt
@@ -177,27 +176,15 @@ jobs:
             echo "    ${CHANNEL}.txt -> ${VERSION}"
           fi
 
-          echo ">>> 上传完成！"
-
-      - name: Refresh CDN
-        env:
-          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
-          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
-        run: |
-          pip install tccli
-
+          # 刷新 CDN
           tccli configure set secretId "${TENCENT_SECRET_ID}"
           tccli configure set secretKey "${TENCENT_SECRET_KEY}"
           tccli configure set region ap-beijing
 
-          VERSION=$(jq -r '.version' package.json)
-
-          echo ">>> 刷新 CDN 缓存..."
+          echo ">>> 刷新 CDN..."
           tccli cdn PurgePathCache \
             --Paths '["https://releases.suqing.chat/desktop/latest.txt","https://releases.suqing.chat/desktop/'"${VERSION}"'/"]' \
             --FlushType flush
-
-          echo ">>> CDN 刷新完成！"
 
       - name: Create GitHub Release
         env:
@@ -206,6 +193,7 @@ jobs:
           VERSION=$(jq -r '.version' package.json)
 
           echo ">>> 创建 GitHub Release..."
+
           gh release create "v${VERSION}" \
             --title "Teamost Desktop v${VERSION}" \
             --notes "📦 自动构建完成
@@ -219,12 +207,4 @@ jobs:
           | macOS Universal | [DMG 安装包](https://releases.suqing.chat/desktop/${VERSION}/teamost-desktop-${VERSION}-mac-universal.dmg) |
           | Linux x64 | [tar.gz](https://releases.suqing.chat/desktop/${VERSION}/teamost-desktop-${VERSION}-linux-x64.tar.gz) |
           | Linux ARM64 | [tar.gz](https://releases.suqing.chat/desktop/${VERSION}/teamost-desktop-${VERSION}-linux-arm64.tar.gz) |" \
-            --draft \
-            ./build/win/${VERSION}/*.{msi,zip} \
-            ./build/mac/${VERSION}/*.dmg \
-            ./build/linux/${VERSION}/*.tar.gz \
-            ./build/linux/${VERSION}/*.AppImage \
-            ./build/linux/${VERSION}/*.deb \
-            ./build/linux/${VERSION}/*.rpm 2>/dev/null || true
-
-          echo ">>> Release 创建完成！"
+            --draft 2>/dev/null || echo "Release 已存在或创建失败，跳过"
