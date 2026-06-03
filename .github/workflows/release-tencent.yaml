@@ -1,0 +1,224 @@
+name: Release to Tencent COS
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "package.json"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package for Windows
+        run: npm run package:windows
+
+      - name: Collect artifacts
+        shell: bash
+        run: |
+          mkdir -p ./build/win
+          bash ./scripts/cp_artifacts.sh release ./build/win
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-windows
+          path: ./build/win
+          retention-days: 7
+
+  build-macos:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "package.json"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package for macOS
+        run: npm run package:mac-with-universal
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p ./build/mac
+          bash ./scripts/cp_artifacts.sh release ./build/mac
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-macos
+          path: ./build/mac
+          retention-days: 7
+
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "package.json"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates libxtst-dev libpng++-dev \
+            gcc-aarch64-linux-gnu g++-aarch64-linux-gnu jq flatpak flatpak-builder
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak install -y --noninteractive flathub org.freedesktop.Platform/x86_64/25.08 org.freedesktop.Sdk/x86_64/25.08 org.electronjs.Electron2.BaseApp/x86_64/25.08 org.freedesktop.Platform/aarch64/25.08 org.freedesktop.Sdk/aarch64/25.08 org.electronjs.Electron2.BaseApp/aarch64/25.08 || true
+
+      - name: Install npm deps
+        run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
+
+      - name: Package for Linux
+        run: npm run package:linux
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p ./build/linux
+          bash ./scripts/cp_artifacts.sh release ./build/linux
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-linux
+          path: ./build/linux
+          retention-days: 7
+
+  upload-to-cos:
+    runs-on: ubuntu-22.04
+    needs:
+      - build-windows
+      - build-macos
+      - build-linux
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./build
+          pattern: build-*
+          merge-multiple: true
+
+      - name: Upload to Tencent COS
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+        run: |
+          pip install coscmd
+
+          # 配置 coscmd
+          coscmd config \
+            -a "${TENCENT_SECRET_ID}" \
+            -s "${TENCENT_SECRET_KEY}" \
+            -b teamost-releases-1340849355 \
+            -r ap-beijing
+
+          # 读取版本号
+          VERSION=$(jq -r '.version' package.json)
+          echo ">>> 版本: ${VERSION}"
+
+          # 上传所有平台产物
+          echo ">>> 上传 Windows 产物..."
+          coscmd upload -r "./build/win/${VERSION}/" "/desktop/${VERSION}/" || echo "no win artifacts"
+
+          echo ">>> 上传 macOS 产物..."
+          coscmd upload -r "./build/mac/${VERSION}/" "/desktop/${VERSION}/" || echo "no mac artifacts"
+
+          echo ">>> 上传 Linux 产物..."
+          coscmd upload -r "./build/linux/${VERSION}/" "/desktop/${VERSION}/" || echo "no linux artifacts"
+
+          # 生成版本文件
+          echo ">>> 生成版本文件..."
+          if echo "${VERSION}" | grep -qP '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "${VERSION}" > /tmp/latest.txt
+            coscmd upload /tmp/latest.txt /desktop/latest.txt
+            echo "    latest.txt -> ${VERSION}"
+          else
+            CHANNEL=$(echo "${VERSION}" | grep -oP '^\d+\.\d+\.\d+-\K[^.]+')
+            echo "${VERSION}" > "/tmp/${CHANNEL}.txt"
+            coscmd upload "/tmp/${CHANNEL}.txt" "/desktop/${CHANNEL}.txt"
+            echo "    ${CHANNEL}.txt -> ${VERSION}"
+          fi
+
+          echo ">>> 上传完成！"
+
+      - name: Refresh CDN
+        env:
+          TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
+          TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+        run: |
+          pip install tccli
+
+          tccli configure set secretId "${TENCENT_SECRET_ID}"
+          tccli configure set secretKey "${TENCENT_SECRET_KEY}"
+          tccli configure set region ap-beijing
+
+          VERSION=$(jq -r '.version' package.json)
+
+          echo ">>> 刷新 CDN 缓存..."
+          tccli cdn PurgePathCache \
+            --Paths '["https://releases.suqing.chat/desktop/latest.txt","https://releases.suqing.chat/desktop/'"${VERSION}"'/"]' \
+            --FlushType flush
+
+          echo ">>> CDN 刷新完成！"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+
+          echo ">>> 创建 GitHub Release..."
+          gh release create "v${VERSION}" \
+            --title "Teamost Desktop v${VERSION}" \
+            --notes "📦 自动构建完成
+
+          下载地址: https://releases.suqing.chat/desktop/${VERSION}/
+
+          | 平台 | 文件 |
+          |------|------|
+          | Windows x64 | [MSI 安装包](https://releases.suqing.chat/desktop/${VERSION}/teamost-desktop-setup-${VERSION}-win-x64.msi) |
+          | Windows ARM64 | [MSI 安装包](https://releases.suqing.chat/desktop/${VERSION}/teamost-desktop-setup-${VERSION}-win-arm64.msi) |
+          | macOS Universal | [DMG 安装包](https://releases.suqing.chat/desktop/${VERSION}/teamost-desktop-${VERSION}-mac-universal.dmg) |
+          | Linux x64 | [tar.gz](https://releases.suqing.chat/desktop/${VERSION}/teamost-desktop-${VERSION}-linux-x64.tar.gz) |
+          | Linux ARM64 | [tar.gz](https://releases.suqing.chat/desktop/${VERSION}/teamost-desktop-${VERSION}-linux-arm64.tar.gz) |" \
+            --draft \
+            ./build/win/${VERSION}/*.{msi,zip} \
+            ./build/mac/${VERSION}/*.dmg \
+            ./build/linux/${VERSION}/*.tar.gz \
+            ./build/linux/${VERSION}/*.AppImage \
+            ./build/linux/${VERSION}/*.deb \
+            ./build/linux/${VERSION}/*.rpm 2>/dev/null || true
+
+          echo ">>> Release 创建完成！"

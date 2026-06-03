@@ -34,7 +34,7 @@ const buildConfig: BuildConfig = {
     upgradeLink: DEFAULT_UPGRADE_LINK,
     enableServerManagement: true,
     enableUpdateNotifications: true,
-    updateNotificationURL: 'https://releases.teamost.cn/desktop',
+    updateNotificationURL: 'https://releases.suqing.chat/desktop',
     macAppStoreUpdateURL: 'macappstore://apps.apple.com/us/app/teamost-desktop/id1614666244',
     windowsStoreUpdateURL: 'ms-windows-store://pdp/?productid=XP8BR8MH3LPKLT',
     linuxUpdateURL: 'https://docs.teamost.cn/deployment-guide/desktop/linux-desktop-install.html',
